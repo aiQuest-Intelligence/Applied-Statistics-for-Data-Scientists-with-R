@@ -8,7 +8,7 @@ This course provides a structured introduction to **R programming**, **statistic
 ---
 
 ## **Instructor Information**
-**Instructor:** Md. Ahsanul Islam  
+**Instructor:** [Md. Ahsanul Islam](https://www.linkedin.com/in/mdahsanulhimel)
 **Position:** Analysis Executive at Kantar Market Research  
 **Education:** M.Sc. in Statistics at University of Chittagong  
 
