@@ -2,3 +2,5 @@ Class 03: Data Structures: Vector, Matrix, Array | Applied Statistics for Data S
 
 ---
 [Watch Full Video!](https://youtu.be/VmZFe0I3yfY)
+
+---
