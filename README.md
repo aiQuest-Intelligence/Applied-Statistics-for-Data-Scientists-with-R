@@ -7,6 +7,13 @@ This course provides a structured introduction to **R programming**, **statistic
 [Watch: Full Course](https://www.youtube.com/playlist?list=PLKdU0fuY4OFdcvSMgwilt99n81IhhaHSX)
 ---
 
+## **Instructor Information**
+**Instructor:** Md. Ahsanul Islam  
+**Position:** Analysis Executive at Kantar Market Research  
+**Education:** M.Sc. in Statistics at University of Chittagong  
+
+---
+
 ## **Course Modules**
 
 ### **Module 1: Foundations of R Programming (7 classes)**
@@ -144,12 +151,6 @@ This course provides a structured introduction to **R programming**, **statistic
    - Case Studies and Practice
    - Course Recap and Q&A
 
----
-
-## **Instructor Information**
-**Instructor:** Md. Ahsanul Islam  
-**Position:** Analysis Executive at Kantar Market Research  
-**Education:** M.Sc. in Statistics at University of Chittagong  
 
 ---
 
