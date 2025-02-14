@@ -1,4 +1,4 @@
-Class 06: Data Wrangling with dplyr & Base R | Applied Statistics for Data Scientist with R | Bangla
+Class 06: Data Wrangling with dplyr & Base R | Applied Statistics for Data Scientist with R | Bangla Tutorial
 
 ---
 
