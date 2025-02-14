@@ -5,7 +5,8 @@ Class 08: Descriptive Statistics & EDA for Data Analytics | Applied Statistics f
 [Watch Full Video](https://youtu.be/7pe1Hle5Nss)
 
 ---
-Note: A few common sampling techniques that you might want to know - <br>
+<h4>Note: </h4>
+A few common sampling techniques that you might want to know - <br>
 Simple random sampling <br>
 Stratified sampling <br>
 Clustered sampling <br>
