@@ -7,7 +7,7 @@ Class 08: Descriptive Statistics & EDA for Data Analytics | Applied Statistics f
 ---
 <h4>Note: </h4>
 A few common sampling techniques that you might want to know - <br>
-Simple random sampling <br>
-Stratified sampling <br>
-Clustered sampling <br>
-Probability proportional to size sampling <br>
+1. Simple random sampling <br>
+2. Stratified sampling <br>
+3. Clustered sampling <br>
+4. Probability proportional to size sampling <br>
