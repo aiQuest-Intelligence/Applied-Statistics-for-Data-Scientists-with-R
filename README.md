@@ -2,7 +2,8 @@
 
 ## Course Overview
 This course provides a structured introduction to **R programming**, **statistical analysis**, **predictive modeling**, and **interactive data applications**. It is designed for data scientists, statisticians, and analysts who want to leverage **R** for data manipulation, visualization, and statistical modeling.
-
+---
+[Watch: Full Course](https://www.youtube.com/playlist?list=PLKdU0fuY4OFdcvSMgwilt99n81IhhaHSX)
 ---
 
 ## **Course Modules**
