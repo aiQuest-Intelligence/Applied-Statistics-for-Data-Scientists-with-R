@@ -1,0 +1,245 @@
+---
+title: "*t*-Test in R"
+author: "Md. Ahsanul Islam"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    theme: journal
+    highlight: tango
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+
+# Required Packages
+
+```{r}
+library(ggplot2)
+library(reshape2)
+library(car)
+library(ggpubr)
+```
+
+# One sample t-test
+
+## Manual Calculation
+
+```{r}
+set.seed(123)
+sample_data <- rnorm(30, mean = 50, sd = 10)
+mean(sample_data)
+sd(sample_data)
+```
+
+Hypothesis:\
+$H_0: \mu = \mu_0$\
+$H_1: \mu \neq \mu_0$\
+
+```{r}
+# mu_0 = 55
+SE <- sd(sample_data)/sqrt(length(sample_data))
+t_cal <- (mean(sample_data) - 55)/SE
+print(t_cal)
+t_crit <- qt(0.05/2, df = length(sample_data)-1, lower.tail = TRUE)
+t_crit
+
+t_cal <= t_crit  # decision: reject null
+pt(t_cal, df = 29, lower.tail = TRUE) + pt(-t_cal, df = 29, lower.tail = FALSE)
+```
+
+Calculating confidence interval:
+```{r}
+mean(sample_data) + c(-1, 1) * abs(t_crit) * SE
+```
+
+## Using Function
+
+Generate sample data:
+```{r}
+set.seed(123)
+sample_data <- rnorm(30, mean = 50, sd = 10)
+```
+
+Testing normality using Shapiro-Wilk test:
+```{r}
+shapiro.test(sample_data)
+```
+
+$H_0:$ Data follows normal distribution.   
+$H_1:$ Data does not follow normal distribution.   
+
+Since the p-value is greater than the level of significance ($\alpha$ = 0.05), we do not have enough statistical evidence to reject the null hypothesis.
+
+One-sample t-test:
+
+Hypothesis:\
+$H_0: \mu = 50$\
+$H_1: \mu \neq 50$\
+
+Using function, perform the two tailed t-test:
+```{r}
+t.test(sample_data, mu = 53, conf.level = 0.95)
+```
+
+If p-value < 0.05, then reject null.
+Decision is not rejected.
+
+```{r}
+t.test(sample_data, mu = 53, conf.level = 0.99)
+```
+
+If p-value < 0.01, then reject null. 
+Decision is not rejected.
+
+```{r}
+t.test(sample_data, mu = 53, conf.level = 0.90)
+```
+
+If p-value < 0.10, then reject null. 
+Decision is rejected.
+
+
+Hypothesis:\
+$H_0: \mu <= 40$\
+$H_1: \mu > 40$\
+```{r}
+t.test(sample_data, mu = 40, alternative = "greater")
+```
+
+Hypothesis:\
+$H_0: \mu >= 58$\
+$H_1: \mu < 58$\
+```{r}
+t.test(sample_data, mu = 58, alternative = "less")
+```
+
+
+```{r}
+ggplot(data.frame(Value = sample_data), aes(x = Value)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 15, fill = "blue", alpha = 0.5) +
+  geom_density(color = "red", linewidth = 1) +
+  labs(title = "Sample Data Distribution", x = "Value", y = "Density") +
+  theme_minimal()
+```
+
+# Two-samples t-test
+
+Use built-in dataset: mtcars (comparing mpg for automatic vs manual cars):
+```{r}
+data(mtcars)
+```
+
+Split into two groups based on transmission type":
+```{r}
+auto_mpg <- mtcars$mpg[mtcars$am == 0]    # Automatic
+manual_mpg <- mtcars$mpg[mtcars$am == 1]  # Manual
+```
+
+$H_0$: Automatic cars and manual cars have equal average mpg.   
+$H_1$: Automatic cars and manual cars have unequal average mpg.   
+
+```{r}
+mean(auto_mpg)
+mean(manual_mpg)
+```
+
+```{r}
+var(auto_mpg)
+var(manual_mpg)
+```
+
+
+
+Normality test for both groups:
+```{r}
+shapiro.test(auto_mpg)
+shapiro.test(manual_mpg)
+```
+
+Check variance homogeneity (Levene's test):
+```{r}
+leveneTest(mpg ~ factor(am), data = mtcars, center = "mean")
+```
+
+Perform two-sample t-test:
+```{r}
+t.test(auto_mpg, manual_mpg, var.equal = FALSE) 
+```
+
+
+```{r}
+# Visualize the data
+ggplot(mtcars, aes(x = factor(am), y = mpg, fill = factor(am))) +
+  geom_boxplot(alpha = 0.6) +
+  geom_jitter(width = 0.2, alpha = 0.7) +
+  labs(title = "MPG Comparison: Automatic vs Manual", 
+       x = "Transmission (0 = Auto, 1 = Manual)", 
+       y = "Miles Per Gallon") +
+  scale_fill_manual(values = c("blue", "red"), 
+                    labels = c("Automatic", "Manual")) +
+  theme_minimal()
+```
+
+
+# Paired samples t-test
+
+Generate 30 observations:
+```{r}
+set.seed(123)
+before <- round(rnorm(30, mean = 300, sd = 10), 0)
+summary(before)
+# after a course
+after <- before + round(rnorm(30, mean = 5, sd = 5), 0) # Simulating a increase
+summary(after)
+```
+
+```{r}
+df <- data.frame(
+  ID = 1:30,
+  Before = before,
+  After = after
+)
+```
+
+```{r}
+mean(after) - mean(before)
+```
+
+
+$H_0:$ Before and after the course the true GRE average score of the students stays the same.   
+$H_1:$ Before and after the course the true GRE average score of the students does not remain the same.   
+
+Perform Paired t-test
+```{r}
+t.test(x = after, y = before, paired = TRUE, alternative = "two.sided")
+```
+
+```{r}
+# Visualize the differences
+df <- data.frame(
+  ID = 1:30,
+  Before = before, 
+  After = after
+  )
+df_long <- melt(df, id.vars = "ID")
+ggplot(df_long, aes(x = variable, y = value, group = ID)) +
+  geom_point(aes(color = variable), size = 3) +
+  geom_line() +
+  labs(title = "Paired Samples (Before vs. After)", 
+       y = "Values", x = "Condition") +
+  theme_minimal()
+
+ggpaired(df_long, 
+         x = "variable", 
+         y = "value",
+         color = "variable", 
+         line.color = "gray", 
+         line.size = 0.4,
+         palette = "jco") +
+  stat_compare_means(paired = TRUE, method = "t.test")
+```
+
