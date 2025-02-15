@@ -1,0 +1,267 @@
+---
+title: "Correlation and Regression"
+author: "Md. Ahsanul Islam"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    theme: journal
+    highlight: tango
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, comment = NA)
+```
+
+# Packages
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(gridExtra)
+library(ggcorrplot)
+
+library(car)
+library(lmtest)
+```
+
+# Correlation
+
+## Data
+
+```{r}
+data <- data.frame(
+  X = c(10, 20, 30, 40, 50, 60, 70, 80, 90, 100),
+  Y = c(15, 30, 45, 60, 75, 85, 95, 105, 110, 120),
+  Z = c(30, NA, 40, 45, 30, 50, 30, 40, 60, 70),
+  M = -c(30, NA, 40, 45, 30, 50, 30, 40, 60, 70),
+  Cat = rep(c("A","B"), each = 5)
+)
+data
+ggplot(data, aes(x = X, y = Y)) + geom_point()
+
+```
+
+## Functions 
+
+```{r}
+cor(data$X, data$Y)
+cor(data$X, data$Z, use = "complete.obs")
+cor(data$X, data$M, use = "complete.obs")
+
+data %>% 
+  select(where(is.numeric)) %>% 
+  cor(use = "complete.obs") %>% 
+  round(3)
+
+data %>% 
+  select(where(is.numeric)) %>% 
+  cor(use = "complete.obs", method = "spearman") %>% 
+  round(3)
+
+data %>% 
+  select(where(is.numeric)) %>% 
+  cor(use = "complete.obs", method = "kendall") %>% 
+  round(3)
+
+```
+
+## lares
+
+```{r}
+library(lares)
+
+corr_cross(
+  df = data %>% select(where(is.numeric)), 
+  max_pvalue = 0.05,
+  type = 2, 
+  top = 20, 
+  grid = F
+)
+```
+
+# ggstatsplot
+
+```{r}
+library(ggstatsplot)
+
+ggcorrmat(
+  data = data,
+  colors = c("blue", "white", "green"),
+  title = "Correlalogram for simulated data", 
+  matrix.type = "lower", 
+  type = "parametric", pch = ""
+)
+```
+
+
+
+
+## Example 1
+
+```{r}
+set.seed(42)
+
+# Generate 30 observations for X
+X <- seq(-10, 10, length.out = 30)
+U <- -X
+cor(X, X + rnorm(30))
+plot(X, X)
+
+# Create different relationships
+Linear <- 2 * X + rnorm(30, mean = 0, sd = 1)              # Linear relationship with noise
+Sine <- sin(X) + rnorm(30, mean = 0, sd = 0.2)             # Sine wave with noise
+Exponential <- exp(X / 10) + rnorm(30, mean = 0, sd = 0.2) # Exponential growth
+Quadratic <- X^2 + rnorm(30, mean = 0, sd = 5)             # Quadratic with noise
+Logarithmic <- log(abs(X) + 1) + rnorm(30, mean = 0, sd = 0.2) # Logarithmic
+
+df <- data.frame(X, Sine, Exponential, Quadratic, Logarithmic, Linear)
+head(df)
+```
+
+
+```{r}
+# Scatter plot for Sine
+p1 <- ggplot(df, aes(x = X, y = Sine)) +
+  geom_point(color = "blue") +
+  geom_smooth(method = "loess", color = "red") +
+  ggtitle("X vs Sine (Non-Linear)")
+
+# Scatter plot for Exponential
+p2 <- ggplot(df, aes(x = X, y = Exponential)) +
+  geom_point(color = "green") +
+  geom_smooth(method = "loess", color = "red") +
+  ggtitle("X vs Exponential (Non-Linear)")
+
+# Scatter plot for Quadratic
+p3 <- ggplot(df, aes(x = X, y = Quadratic)) +
+  geom_point(color = "purple") +
+  geom_smooth(method = "loess", color = "red") +
+  ggtitle("X vs Quadratic (Non-Linear)")
+
+# Scatter plot for Logarithmic
+p4 <- ggplot(df, aes(x = X, y = Logarithmic)) +
+  geom_point(color = "orange") +
+  geom_smooth(method = "loess", color = "red") +
+  ggtitle("X vs Logarithmic (Non-Linear)")
+
+# Scatter plot for Linear
+p5 <- ggplot(df, aes(x = X, y = Linear)) +
+  geom_point(color = "black") +
+  geom_smooth(method = "lm", color = "red") +  # **Linear fit**
+  ggtitle("X vs Linear (Linear Relationship)")
+
+# Arrange plots in a grid
+grid.arrange(p1, p2, p3, p4, p5, ncol = 2)
+
+```
+
+
+Shorten code by creating functions for ggplto:
+```{r}
+scatter_plot <- function(data, x_var, y_var, title, x_lab = NULL, y_lab = NULL) {
+  
+  ggplot(data, aes(x = {x_var}, y = {y_var})) +
+    geom_point(color = "blue") +
+    geom_smooth(method = "loess", color = "red") +
+    labs(title = title, 
+         x = x_lab, y = y_lab) + 
+    theme_bw()
+}
+
+scatter_plot(df, X, Sine, "X vs Sine (Non-Linear)", "X", "Sine")
+
+p1 <- scatter_plot(df, X, Sine, "X vs Sine (Non-Linear)", "X", "Sine")
+p2 <- scatter_plot(df, X, Exponential, "X vs Exponential (Non-Linear)")
+p3 <- scatter_plot(df, X, Quadratic, "X vs Quadratic (Non-Linear)")
+p4 <- scatter_plot(df, X, Logarithmic, "X vs Logarithmic (Non-Linear)")
+p5 <- scatter_plot(df, X, Linear, "X vs Linear (Linear Relationship)")
+
+# Arrange plots in a grid
+grid.arrange(p1, p2, p3, p4, p5, ncol = 2)
+```
+
+Correlation Matrix:
+```{r}
+# Compute correlation matrix
+cor_matrix <- cor(df, method = "pearson")
+cor_matrix
+```
+
+
+# Regression
+
+```{r}
+# Set seed for reproducibility
+set.seed(42)
+
+# Generate 50 observations
+n <- 50
+X1 <- runif(n, 1, 100)  # Independent variable
+X2 <- rnorm(n, 0, 5) # another independent variable
+Y <- 5 + 2*X1 - 3*X2 + rnorm(n, 0, 10)  # Linear model with noise
+
+df <- round(
+  data.frame(Y, X1, X2), 
+  2)
+
+head(df)
+cor(df)
+```
+
+## Model
+
+```{r}
+model <- lm(Y ~ X1 + X2, data = df)
+summary(model)
+```
+
+```{r}
+test <- data.frame(
+  X1 = c(30, 40),
+  X2 = c(10, 14)
+)
+
+cbind(test, predicted = predict(model, test))
+```
+
+
+## Residuals vs. fitted plot
+
+
+```{r}
+cbind(df, predicted = predict(model, df), resid(model))
+```
+
+```{r}
+plot(model$fitted.values, resid(model), 
+     main="Residuals vs Fitted", xlab="Fitted Values", ylab="Residuals", pch=19)
+abline(h=0, col="red")  # Reference line
+```
+
+## VIF
+
+```{r}
+car::vif(model)
+```
+
+## Breusch-Pagan Test
+
+```{r}
+lmtest::bptest(model)
+```
+
+## QQ plot
+
+```{r}
+qqnorm(resid(model))
+qqline(resid(model), col="red")
+
+hist(resid(model))
+```
+
+```{r}
+shapiro.test(resid(model))
+```
+
