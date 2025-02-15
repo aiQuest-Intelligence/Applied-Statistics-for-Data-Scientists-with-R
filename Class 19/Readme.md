@@ -1,4 +1,4 @@
-Class 19: GLM & Logistic Regression with R | Applied Statistics for Data Scientists with R
+Class 19: GLM & Logistic Regression with R | Applied Statistics for Data Scientists with R | Bangla Tutorial
 
 ---
 
