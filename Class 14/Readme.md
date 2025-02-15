@@ -2,6 +2,6 @@ Class 14: Probability Distribution | Applied Statistics for Data Scientist with 
 
 ---
 
-[Watch Full Course](https://youtu.be/UOkzrD-ZdtU)
+[Watch Full Video!](https://youtu.be/UOkzrD-ZdtU)
 
 ---
