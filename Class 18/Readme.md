@@ -1,4 +1,4 @@
-Class 18: Correlation & Regression Analysis with R | Applied Statistics for Data Scientists | Bangla
+Class 18: Correlation & Regression Analysis with R | Applied Statistics for Data Scientists | Bangla 
 
 ---
 
