@@ -1,10 +1,6 @@
 # শিক্ষা হোক মাতৃভাষায়!
 
----
-
 ## Applied Statistics for Data Scientists with R
-
----
 
 ## Course Overview
 This course provides a structured introduction to **R programming**, **statistical analysis**, **predictive modeling**, and **interactive data applications**. It is designed for data scientists, statisticians, and analysts who want to leverage **R** for data manipulation, visualization, and statistical modeling.
