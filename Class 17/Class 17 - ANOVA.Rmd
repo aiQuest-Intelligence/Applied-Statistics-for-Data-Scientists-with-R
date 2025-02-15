@@ -1,0 +1,185 @@
+---
+title: "ANOVA and Post-hoc analysis in R"
+author: "Md. Ahsanul Islam"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    theme: journal
+    highlight: tango
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, comment = NA)
+```
+
+# Packages
+
+```{r}
+library(dplyr)
+library(ggplot2)
+```
+
+# Data
+
+```{r}
+set.seed(42)  # for reproducibility
+
+groupA <- rnorm(30, mean = 50, sd = 5)
+groupB <- rnorm(30, mean = 55, sd = 5) 
+groupC <- rnorm(30, mean = 60, sd = 5) 
+groupD <- rnorm(30, mean = 47, sd = 5)
+
+my_data <- data.frame(
+  value = c(groupA, groupB, groupC, groupD),
+  group = factor(rep(c("A", "B", "C", "D"), each = 30))
+)
+```
+
+
+
+```{r}
+my_data %>% 
+  group_by(group) %>% 
+  summarize(Avg = mean(value))
+
+my_data %>% 
+  ggplot(aes(x = value, fill = group)) +
+  geom_histogram(alpha = 0.6) +
+  facet_wrap(vars(group), ncol = 1)
+```
+
+
+# Assumptions Test
+
+Normality test:   
+
+Null hypo: Data does not deviate from normal distribution.   
+Alt hypo: Data deviates from normal distribution.    
+
+
+```{r}
+shapiro.test(groupA) # null not rejected
+shapiro.test(groupB) # null not rejected
+shapiro.test(groupC) # null not rejected
+```
+
+Homogeneity of variance test:
+
+Null: Group variances are equal.
+Alt: At least one group variance differ than others.
+
+```{r}
+car::leveneTest(value ~ group, data = my_data)
+```
+
+
+# ANOVA
+
+$$
+H_0: \mu_1 = \mu_2 =\mu_3 \newline
+$$
+
+$H_1:$ At least one of the group mean is not equal to others.
+
+
+```{r}
+anova_model <- aov(value ~ group, data = my_data)
+summary(anova_model)
+```
+
+# Post-Hoc
+
+
+The following procedure is wrong:
+```{r}
+my_data_sub <- my_data %>% 
+  filter(group %in% c("A","B"))
+t.test(value ~ group, my_data_sub, var.equal = TRUE)
+
+my_data_sub <- my_data %>% 
+  filter(group %in% c("A","C"))
+t.test(value ~ group, my_data_sub, var.equal = TRUE)
+
+my_data_sub <- my_data %>% 
+  filter(group %in% c("A","D"))
+t.test(value ~ group, my_data_sub, var.equal = TRUE)
+```
+
+We need to use post hoc tests: 
+
+```{r}
+TukeyHSD(anova_model, "group", conf.level = 1-0.05)
+```
+
+```{r}
+pairwise.t.test(my_data$value, my_data$group, p.adjust.method = "bonferroni")
+```
+
+```{r}
+DescTools::ScheffeTest(anova_model, "group", conf.level = 0.95)
+```
+
+
+
+# Example
+
+
+```{r}
+data <- readxl::read_excel("Data/StudentSurveyData.xlsx")
+str(data)
+data <- data %>% 
+  mutate(Computer = factor(Computer))
+```
+
+
+```{r}
+summary(data %>% select(Computer, GPA))
+```
+
+```{r}
+data %>% 
+  group_by(Computer) %>% 
+  summarize(mean(GPA))
+
+data %>% 
+  ggplot(aes(x = GPA)) + 
+  geom_histogram() +
+  facet_wrap(~Computer, ncol = 1)
+```
+
+
+```{r}
+anova_model_stu <- aov(GPA ~ Computer, data)
+summary(anova_model_stu)
+```
+
+```{r}
+TukeyHSD(anova_model_stu)
+```
+
+
+
+```{r}
+data %>% 
+  group_by(Employment) %>% 
+  summarize(mean(Spending))
+
+data %>% 
+  ggplot(aes(x = Spending)) + 
+  geom_boxplot() +
+  facet_wrap(~Employment, ncol = 1)
+```
+
+
+```{r}
+anova_model_stu2 <- aov(Spending ~ Employment, data)
+summary(anova_model_stu2)
+
+aov(lm(Spending ~ Employment, data))
+```
+
+```{r}
+TukeyHSD(anova_model_stu2)
+```
