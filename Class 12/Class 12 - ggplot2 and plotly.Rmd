@@ -1,0 +1,753 @@
+---
+title: "Class 12 - ggplot2 customization, correlation and association"
+author: "Md. Ahsanul Islam"
+date:   "`r Sys.time()`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+# Packages
+
+Loading required packages:
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+library(ggplot2)
+library(dplyr)
+library(ggthemes)
+library(ggThemeAssist)
+library(forcats)
+library(ggpubr)
+```
+
+Setting global theme:
+```{r}
+# theme_set(theme_classic())
+```
+
+
+# Data
+
+Loading the built in iris data:
+```{r}
+data(iris)
+```
+
+Loading the student survey data:
+```{r}
+student <- readxl::read_excel("Data/StudentSurveyData.xlsx")
+```
+
+
+
+# Scatter Plot
+
+
+```{r}
+ggplot(data = iris) + 
+  geom_point(mapping = aes(x = Sepal.Length, y = Sepal.Width)) +
+  theme_classic()
+```
+
+```{r}
+ggplot(data = iris) +
+  aes(x = Sepal.Length, y = Sepal.Width) +
+  geom_point() 
+ 
+ggplot(data = iris, aes(x = Sepal.Length, y = Sepal.Width)) +
+  geom_point(color = "tomato1")
+
+ggplot(data = iris, aes(x = Sepal.Length, y = Sepal.Width)) +
+  geom_point(size = 3)
+
+ggplot(data = iris, aes(x = Sepal.Length, y = Sepal.Width)) +
+  geom_point(shape = 16)
+ggplot(data = iris, aes(x = Sepal.Length, y = Sepal.Width)) +
+  geom_point(shape = "diamond filled")
+
+ggplot(data = iris, aes(x = Sepal.Length, y = Sepal.Width, col = Species)) +
+  geom_point()
+
+ggplot(data = iris, aes(x = Sepal.Length, y = Sepal.Width, col = Species)) +
+  geom_point() + 
+  labs(x = "Sepal Length", y = "Sepal Width", col = "Species", 
+       title = "Scatter Plot of Sepal Length vs Width")
+```
+
+# Histogram
+
+```{r}
+ggplot(iris, aes(x = Sepal.Length)) +
+  geom_histogram(binwidth = 1, fill = "lightblue", col = "white")
+
+ggplot(data = iris) +
+  geom_histogram(aes(x = Sepal.Length), bins = 10, fill = "lightblue", col = "black") 
+
+ggplot(data = iris) +
+  geom_histogram(aes(x = Sepal.Length), bins = 10, fill = "lightblue", col = "white") 
+
+ggplot(data = iris) +
+  geom_histogram(aes(x = Sepal.Length, fill = Species), bins = 10, col = "white")
+
+ggplot(data = iris) +
+  geom_histogram(aes(x = Sepal.Length, fill = Species), bins = 10, col = "white", alpha = 0.6)
+```
+
+# Extra
+
+```{r}
+res <- sample(1:100, 10)
+res
+sum(res)
+```
+
+The total of the two numbers are `r sum(res)`.
+
+# Reduce Gap between Plot and Axis
+
+```{r}
+ggplot(data = iris) +
+  geom_histogram(aes(x = Sepal.Length, fill = Species), 
+                 bins = 10, col = "white", alpha = 0.5) +
+  coord_cartesian(expand = FALSE)
+
+ggplot(data = iris) +
+  geom_histogram(aes(x = Sepal.Length, fill = Species), 
+                 bins = 10, col = "white", alpha = 0.5) +
+  scale_y_continuous(
+    breaks = seq(-10, 30, by=5),
+    expand = expansion(
+      mult = c(-0.1, 1),      # expands upper portion of the plot by 20%
+      add = c(10, 0)
+      )        # increases gap at the bottom portion by 10 unit
+    )
+
+ggplot(data = iris) +
+  geom_histogram(aes(x = Sepal.Length, fill = Species), 
+                 bins = 10, col = "white", alpha = 0.5) +
+  scale_y_continuous(expand = expansion(add = c(0, 5))) +
+  scale_x_continuous(expand = expansion(add = c(0, 0)))
+```
+
+# Facet
+
+## facet_wrap
+
+```{r}
+ggplot(data = iris) +
+  geom_histogram(aes(x = Sepal.Length, fill = Species), 
+                 bins = 10, col = "white", alpha = 0.5) +
+  facet_wrap(vars(Species), ncol = 1)
+
+ggplot(data = iris) +
+  geom_histogram(aes(x = Sepal.Length, fill = Species), 
+                 bins = 10, col = "white", alpha = 0.5) +
+  facet_wrap(vars(Species), ncol = 1, scales = "free")
+
+ggplot(data = iris) +
+  geom_histogram(aes(x = Sepal.Length, fill = Species), 
+                 bins = 10, col = "white", alpha = 0.5) +
+  facet_wrap(vars(Species), ncol = 1, scales = "free_y")
+```
+
+ 
+## facet_grid
+
+
+```{r}
+ggplot(data = iris) +
+  geom_histogram(aes(x = Sepal.Length, fill = Species), 
+                 bins = 10, col = "white", alpha = 0.5) +
+  facet_grid(rows = vars(Species))
+
+ggplot(data = student) +
+  geom_histogram(aes(x = GPA, fill = Employment), 
+                 bins = 10, col = "white", alpha = 0.5) +
+  facet_grid(rows =  vars(Employment), cols = vars(Gender))
+
+ggplot(data = student) +
+  geom_histogram(aes(x = GPA, fill = Employment), 
+                 bins = 10, col = "white", alpha = 0.5) +
+  facet_grid(rows =  vars(Employment), cols = vars(Class))
+
+student %>% 
+  mutate(Class = factor(Class, 
+                        levels = c("Freshman","Sophomore", "Junior","Senior"))) %>% 
+  ggplot() +
+  geom_histogram(aes(x = Spending, fill = Employment), bins = 10, col = "white", alpha = 0.5) +
+  facet_grid(rows =  vars(Employment), cols = vars(Class))
+```
+
+# Theme
+
+## Built in Themes
+
+```{r}
+ggplot(data = iris) +
+  geom_histogram(aes(x = Sepal.Length, fill = Species), 
+                 bins = 10, col = "white", alpha = 0.5) +
+  facet_wrap(vars(Species), ncol = 1) +
+  theme_classic()
+
+ggplot(data = iris) +
+  geom_histogram(aes(x = Sepal.Length, fill = Species), bins = 10, col = "white", alpha = 0.5) +
+  facet_wrap(vars(Species), ncol = 1) +
+  theme_bw()
+```
+
+## Themes from other packages
+
+```{r}
+ggplot(data = iris) +
+  geom_histogram(aes(x = Sepal.Length, fill = Species), 
+                 bins = 10, col = "white", alpha = 0.5) +
+  facet_wrap(vars(Species), ncol = 1) + 
+  theme_calc() 
+```
+
+
+```{r}
+
+p1 <- ggplot(data = iris) +
+  geom_histogram(aes(x = Sepal.Length, fill = Species), 
+                 bins = 10, col = "white", alpha = 0.5) +
+  facet_wrap(vars(Species), ncol = 1) +
+  labs(
+    title = "Histogram of Sepal Length by Species",
+    x = "Sepal Length",
+    y = "Frequency",
+    fill = "Species",
+    subtitle = "Using Facet and Other Customizations",
+    caption = "Data: Iris"
+  )
+
+# ggThemeAssistGadget(p1)
+p1 + theme(
+  axis.text = element_text(family = "Times",
+    size = 17, angle = 45), 
+  panel.background = element_rect(fill = "hotpink4"),
+    plot.background = element_rect(fill = "antiquewhite3"))
+
+```
+
+
+# Manually Changing Color
+
+```{r}
+ggplot(data = iris) +
+  geom_histogram(aes(x = Sepal.Length, fill = Species), 
+                 bins = 10, col = "white", alpha = 0.5) +
+  facet_wrap(vars(Species), ncol = 1) +
+  scale_fill_manual(values = c("setosa" = "#6C1C80", "versicolor" = "#30A19C", "virginica" = "#123B96"))
+
+ggplot(data = iris) +
+  geom_histogram(aes(x = Sepal.Length, fill = Species), bins = 10, col = "white", alpha = 1) +
+  facet_wrap(vars(Species), ncol = 1) +
+  scale_fill_brewer(palette = "Set2")
+
+ggplot(data = iris) +
+  geom_histogram(aes(x = Sepal.Length, fill = Species), bins = 10, col = "white", alpha = 0.5) +
+  facet_wrap(vars(Species), ncol = 1) +
+  scale_fill_hue(
+    l = 80, c = 100,   # adjust luminosity and chroma
+    h = c(90, 360)     # adjust range of hues
+  )
+```
+
+# Density Plot
+
+```{r}
+ggplot(data = iris) +
+  geom_density(aes(x = Sepal.Length, fill = Species), alpha = 0.5)
+
+ggplot(data = iris) +
+  geom_density(aes(x = Sepal.Length, fill = Species), alpha = 0.5) +
+  facet_wrap(vars(Species), ncol = 1)
+```
+
+
+
+
+
+# Histogram + Density Plot
+
+```{r}
+ggplot(data = iris, aes(x = Sepal.Length, fill = Species)) +
+  geom_density(alpha = 0.5, color = "white") +
+  geom_histogram(aes(y = after_stat(density)), alpha = 0.5, bins = 10) +
+  facet_wrap(vars(Species), ncol = 1)
+
+ggplot(iris, aes(Sepal.Length)) +
+  geom_histogram(aes(y = after_stat(density)), 
+                 color = "#000000", fill = "#0099F8") +
+  geom_density(color = "#000000", fill = "#0EE100", alpha = 0.5) +
+  geom_vline(aes(xintercept = mean(Sepal.Length)), 
+             color = "#000000", size = 1, linetype = "dashed") +
+  labs(
+    title = "Distribution of Sepal Length",
+    subtitle = "Made by ggplot2",
+    caption = "Source: Iris Data",
+    x = "Sepal Length",
+    y = "Density"
+  ) +
+  theme_classic() +
+  theme(
+    plot.title = element_text(color = "blue", size = 16, face = "bold"),
+    plot.subtitle = element_text(size = 10),
+    plot.caption = element_text(face = "italic")
+  ) +
+  annotate("text", x = 5.9, y = 0.6, 
+           label = paste0("Mode: ", round(DescTools::Mode(iris$Sepal.Length),1) ), hjust = 0)
+```
+
+
+
+
+
+  
+  
+
+# Bar plot / Column plot
+
+
+
+## geom_bar
+
+```{r}
+ggplot(student) +
+  geom_bar(aes(x = Computer)) 
+
+ggplot(student) +
+  geom_bar(aes(x = Computer)) +
+  coord_flip()
+
+ggplot(student) +
+  geom_bar(aes(y = Computer))
+```
+
+
+
+
+
+## geom_col
+
+```{r}
+student %>% 
+  count(Computer) %>% 
+  ggplot() +
+  geom_col(aes(x = Computer, y = n))
+
+student %>% 
+  count(Computer) %>% 
+  ggplot() +
+  geom_col(aes(x = Computer, y = n)) +
+  coord_flip()
+
+student %>% 
+  count(Computer) %>% 
+  ggplot() +
+  geom_col(aes(y = Computer, x = n))
+
+student %>% 
+  count(Computer) %>% 
+  ggplot() +
+  geom_bar(aes(x = Computer, y = n), stat = "identity")
+```
+
+
+## Arranging bars
+
+### geom_bar modification
+
+```{r}
+ggplot(student) +
+  geom_bar(aes(x = Computer)) +
+  scale_x_discrete(limits = c("Laptop", "Desktop", "Tablet"))
+
+ggplot(student) +
+  geom_bar(aes(x = fct_infreq(Computer))) +
+  labs(x = "Computer Usage Status")
+
+ggplot(student) +
+  geom_bar(aes(x = fct_infreq(Computer) %>% fct_rev())) +
+  labs(x = "Computer Usage", y = "frequency", 
+       title = "A simple bar plot")
+
+ggplot(student) +
+  geom_bar(aes(x = Computer), fill = c("black","bisque3","red")) +
+  theme_bw()
+
+ggplot(student) +
+  geom_bar(aes(x = Computer, fill = Computer)) +
+  scale_fill_manual(values = c("black","bisque3","red"))
+```
+
+
+### geom_col modification
+
+```{r}
+student %>% 
+  count(Computer) %>% 
+  ggplot() +
+  geom_col(aes(x = Computer, y = n)) + 
+  scale_x_discrete(limits = c("Laptop", "Desktop", "Tablet"))
+
+student %>% 
+  count(Computer) %>% 
+  ggplot() +
+  geom_col(aes(x = reorder(Computer, -n), y = n))
+
+student %>% 
+  count(Computer) %>% 
+  ggplot(aes(x = reorder(Computer, -n), y = n, label=n)) +
+  geom_col() +
+  geom_text(vjust=-1, color="black", size=3.5) +
+  theme_minimal() +
+  ylim(0, 100)
+
+student %>% 
+  count(Computer) %>% 
+  ggplot(aes(x = reorder(Computer, -n), y = n)) +
+  geom_col() +
+  geom_text(aes(label=n), vjust=-0.5, color="black", size=3) +
+  theme_minimal()
+
+student %>% 
+  count(Computer, Class) %>% 
+  ggplot(aes(x = reorder(Computer, -n), y = n)) +
+  geom_col() +
+  geom_text(aes(label=n), vjust=-0.5, color="black", size=3) +
+  theme_minimal() +
+  facet_wrap(vars(Class)) +
+  ylim(0, 35) +
+  labs(x = "Computer Usage")
+
+
+student %>% 
+  count(Computer, Class) %>% 
+  ggplot(aes(x = reorder(Computer, -n), y = n)) +
+  geom_col(fill = "cornflowerblue") +
+  geom_text(aes(label=n), vjust=-0.5, color="black", size=3) +
+  theme_light() +
+  facet_wrap(vars(Class)) +
+  ylim(0, 35) +
+  labs(x = "Device usage", y = "Freq.", title = "Frequency of Device Usage by Class") + 
+  theme(plot.title = element_text(hjust = 0.5),
+        strip.text = element_text(colour = 'black'))
+```
+
+
+## Values on the bars
+
+```{r}
+ggplot(student, aes(y = Major)) +
+  geom_bar() +
+  geom_text(aes(x = after_stat(count - 1), label = after_stat(count)), 
+            stat = "count", 
+            size = 4, col = "white") +
+  labs(x = "Freq.", y  = NULL)
+
+# ggplot(student, aes(y = Major, fill = Computer)) +
+#   geom_bar(position = "dodge") +
+#   geom_text(aes(x = after_stat(count + 1), label = after_stat(count)), 
+#             stat = "count", 
+#             size = 3,
+#             position = position_dodge(1)) +
+#   labs(x = "Freq.", y  = NULL)
+```
+
+
+
+
+
+
+
+# Stacked and Percentage Filled Bar Plot
+
+```{r}
+ggplot(student) +
+  geom_bar(aes(x = Class, fill = Employment))
+
+ggplot(student) +
+  geom_bar(aes(x = Class, fill = Employment), position = "stack") 
+
+ggplot(student) +
+  geom_bar(aes(x = Class, fill = Employment), position = "dodge") 
+
+ggplot(student) +
+  geom_bar(aes(x = Class, fill = Employment), position = "dodge") 
+
+ggplot(student) +
+  geom_bar(aes(x = Class, fill = Employment), position = "fill") 
+```
+
+
+
+
+## Arranging bars
+
+```{r}
+student %>% 
+  mutate(Class = factor(Class, levels = c("Freshman","Sophomore", "Junior","Senior"))) %>% 
+  ggplot() +
+  geom_bar(aes(x = Class, fill = Employment), position = "fill") 
+
+ggplot(student) +
+  geom_bar(aes(x = Class, fill = Employment), position = "fill") +
+  scale_x_discrete(limits = c("Freshman","Sophomore", "Junior","Senior"))
+```
+
+
+## Values on bars
+
+```{r}
+ggplot(student, aes(x = Class, fill = Employment)) +
+  geom_bar(position = "fill") +
+  geom_text(aes(label = after_stat(count)), size = 3,
+            stat = "count", position = position_fill(vjust = 0.5)) 
+
+CGPfunctions::PlotXTabs2(
+  data = student,
+  y = Gender,
+  x =  Computer, 
+  results.subtitle = FALSE, 
+  sample.size.label = TRUE, palette = "Set1",
+  ggtheme = ggplot2::theme_bw()
+) + labs(title = "Stacked Barplot of Device Usage by Gender")
+```
+
+
+
+
+
+# Legend customization 
+
+## Legend position 
+
+```{r}
+ggplot(data = iris) +
+  geom_point(aes(x = Sepal.Length, y = Sepal.Width, col = Species, size = Petal.Length)) + 
+  labs(x = "Sepal Length", y = "Sepal Width",
+       title = "Scatter Plot of Sepal Length vs Width") +
+  theme(legend.position = "right")
+
+ggplot(data = iris) +
+  geom_point(aes(x = Sepal.Length, y = Sepal.Width, col = Species, size = Petal.Length)) + 
+  labs(x = "Sepal Length", y = "Sepal Width",
+       title = "Scatter Plot of Sepal Length vs Width") +
+  guides(color = guide_legend(position = "bottom"))
+
+ggplot(data = iris) +
+  geom_point(aes(x = Sepal.Length, y = Sepal.Width, col = Species, size = Petal.Length)) + 
+  labs(x = "Sepal Length", y = "Sepal Width",
+       title = "Scatter Plot of Sepal Length vs Width") +
+  guides(
+    color = guide_legend(
+      title = "Species Name",
+      position = "bottom",
+      direction = "horizontal",
+      title.position = "left",
+      reverse = FALSE)
+  )
+```
+
+
+
+
+## Hide legend for a specific attribute 
+
+```{r}
+ggplot(data = iris) +
+  geom_point(aes(x = Sepal.Length, y = Sepal.Width, col = Species, size = Petal.Length)) + 
+  guides(color = "none")
+
+ggplot(data = iris) +
+  geom_point(aes(x = Sepal.Length, y = Sepal.Width, col = Species, size = Petal.Length)) + 
+  guides(size = "none")
+
+ggplot(data = iris) +
+  geom_point(aes(x = Sepal.Length, y = Sepal.Width, col = Species, size = Petal.Length)) + 
+  guides(color = "none", size = "none")
+```
+
+## Hide all legends
+
+```{r}
+ggplot(data = iris) +
+  geom_point(aes(x = Sepal.Length, y = Sepal.Width, col = Species, size = Petal.Length)) + 
+  theme(legend.position = "none")
+```
+
+
+
+
+## Reordering levels of legend
+
+```{r}
+ggplot(data = student) +
+  geom_bar(aes(y = Computer, fill = Gender), position = "fill") +
+  scale_fill_discrete(breaks = c("Male","Female")) +
+  theme(legend.position = "bottom")
+```
+
+
+
+# Axis Customization
+
+
+```{r}
+# install.packages(scales)
+ggplot(student, aes(x = Class, fill = Employment)) +
+  geom_bar(position = "fill") +
+  labs(y = "Propotion") +
+  scale_y_continuous(labels = scales::label_percent())
+
+student %>% 
+  mutate(Class = factor(Class, 
+                        levels = c("Freshman","Sophomore", "Junior","Senior"))) %>% 
+  group_by(Class, Gender) %>% 
+  summarize(AvgSpending = mean(Spending)) %>%
+  ungroup() %>% 
+  ggplot() +
+  geom_col(aes(fill = Class, y = AvgSpending, x = Gender), position = "dodge") +
+  theme(legend.position = "bottom") +
+  scale_y_continuous(labels = scales::label_currency(prefix = "BDT "))
+```
+
+
+
+
+
+# Box Plot
+
+```{r}
+ggplot(student, aes(x = Class, y = Spending)) +
+  geom_boxplot() +
+  geom_jitter()
+
+iris %>% 
+  ggplot(aes(x = Species, y = Sepal.Length)) +
+  geom_boxplot() +
+  geom_jitter()
+```
+
+
+Code for ggpubr:
+```{r}
+student %>% 
+  mutate(Class = factor(Class, 
+                        levels = c("Freshman","Sophomore", "Junior","Senior"))) %>% 
+  ggboxplot(x = "Class", y = "Spending",
+            color = "Class", palette =c("#00AFBB", "#E7B800", "#FC4E07","black"),
+            add = "jitter", shape = "Class") +
+  theme(legend.position = "none") +
+  geom_pwc(method = "t_test") +
+  stat_compare_means(method = "anova", label.y = 50)
+
+
+p2 <- ggboxplot(data = iris, x = "Species", y = "Sepal.Length",
+          color = "Species", add = "jitter", palette = "npg") +
+  theme(legend.position = "none") +
+  geom_pwc(method = "t_test")
+
+p2
+
+ggadjust_pvalue(
+  p2, p.adjust.method = "bonferroni",
+  label = "{p.adj.format}{p.adj.signif}"
+)
+
+p3 <- student %>% 
+  mutate(Class = factor(Class, 
+                        levels = c("Freshman","Sophomore", "Junior","Senior"))) %>% 
+  ggboxplot(x = "Class", y = "Spending",
+            color = "Class", palette =c("#00AFBB", "#E7B800", "#FC4E07","black"),
+            add = "jitter", shape = "Class") +
+  theme(legend.position = "none") +
+  geom_pwc(method = "t_test") +
+  stat_compare_means(method = "anova", label.y = 50)
+
+p3
+
+ggadjust_pvalue(
+  p3, p.adjust.method = "bonferroni",
+  label = "{p.adj.format}{p.adj.signif}", hide.ns = TRUE
+)
+```
+
+
+
+
+
+# esquisse add-ins 
+
+```{r}
+# install.packages("esquisse")
+
+ggplot(iris) +
+  aes(x = Sepal.Length, fill = Species) +
+  geom_histogram(bins = 30L) +
+  scale_fill_manual(
+    values = c(setosa = "#6C1C80",versicolor = "#30A19C",virginica = "#123B96")
+    ) +
+  labs(x = "X label", y = "Y label", title = "Title",
+    subtitle = "Subtitle", caption = "Caption", fill = "Fill label") +
+  theme_bw() +
+  theme(
+    legend.position = "bottom",
+    plot.title = element_text(face = "bold.italic"),
+    plot.subtitle = element_text(face = "italic"),
+    axis.title.y = element_text(face = "italic"),
+    axis.title.x = element_text(face = "italic")
+  ) +
+  facet_wrap(vars(Species), ncol = 1)
+```
+
+
+
+
+
+# Combining multiple plots
+
+## patchwork
+
+```{r fig.width = 10, fig.height = 8}
+library(patchwork)
+(p3 | p2) /
+  p1
+```
+
+
+See more: https://patchwork.data-imaginist.com/articles/patchwork.html
+
+## ggarrange
+
+```{r fig.width = 12, fig.height = 8}
+library(gridExtra)
+ggarrange(p1, 
+          ggarrange(p2, p3, ncol = 2),
+          ncol = 1, 
+          nrow = 2)
+
+```
+
+# Integration of Plotly in ggplot2
+
+```{r}
+p1 %>% plotly::ggplotly()
+```
+
+
+
+```{r}
+p4 <- ggplot(student, aes(x = Class, y = Spending)) +
+  geom_boxplot() +
+  geom_jitter()
+plotly::ggplotly(p4)
+```
+
