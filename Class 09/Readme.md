@@ -1,4 +1,4 @@
-Class 09: Descriptive Statistics & EDA with R | Applied Statistics for Data Scientists | Bangla <br>
+Class 09: Descriptive Statistics & EDA with R | Applied Statistics for Data Scientists | Bangla  <br>
 
 ---
 
