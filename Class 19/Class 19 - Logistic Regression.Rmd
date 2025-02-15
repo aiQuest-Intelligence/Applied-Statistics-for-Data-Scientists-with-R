@@ -1,0 +1,129 @@
+---
+title: "GLM and Logistic Regression"
+author: "Md. Ahsanul Islam"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    theme: journal
+    highlight: tango
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, comment = NA)
+```
+
+# Packages
+
+```{r}
+library(tidyverse)
+library(titanic)
+```
+
+
+# Data
+
+```{r}
+data <- titanic_train
+
+data <- data %>%
+  select(Survived, Pclass, Sex, Age, Fare) %>%  
+  filter(!is.na(Age)) %>%  
+  mutate(Survived = factor(Survived, levels = c(0, 1)),
+         Sex = factor(Sex, levels = c("male", "female")))
+```
+
+```{r}
+data %>% 
+  group_by(Sex, Pclass) %>% 
+  summarise(mean(Age), n())
+
+mean(data$Age)
+```
+
+
+```{r}
+model <- glm(Survived ~ Pclass + Sex + Age, data = data, family = binomial)
+summary(model)
+coef(model)
+exp(coef(model))
+exp(coef(model)[-1])  # odds ratio
+```
+
+Each increase in class decreases survival odds by 72% (since odds = 0.28).    
+Females were 92% more likely to survive than males.     
+Males are 92% less likely to survive than females.    
+Each year increase in age decreases odds of survival by 4%.   
+Fare has no meaningful effect.     
+
+# Prediction
+
+Predict survival probabilities for new data:
+
+```{r}
+new_data <- data.frame(
+  Pclass = c(1, 2, 3),  
+  Sex = factor(c("male", "female", "female"), levels = c("male", "female")),
+  Age = c(30, 25, 40)
+)
+
+new_data$link <- predict(model, newdata = new_data, type = "link") # log(odds)
+new_data
+
+new_data$Predicted_Prob <- predict(model, newdata = new_data, type = "response")
+new_data
+
+new_data$terms <- predict(model, newdata = new_data, type = "terms")
+new_data
+```
+
+
+```{r}
+test_dat <- titanic_test
+
+test_dat$Predicted <- predict(model, test_dat, type = "response")
+test_dat$Survived <- ifelse(test_dat$Predicted >= 0.5, "Yes", "No")
+```
+
+
+# Evaluation Metrices
+
+Predict survival using the model (threshold = 0.5):
+```{r}
+predicted_class <- ifelse(predict(model, type = "response") >= 0.5, 1, 0)  # Convert probability to class
+```
+
+## Confusion metrix:
+
+```{r}
+caret::confusionMatrix(factor(predicted_class), data$Survived)
+caret::confusionMatrix(factor(predicted_class), data$Survived, mode = "prec_recall")
+```
+
+## ROC Curve
+
+```{r}
+library(pROC)
+
+predicted_prob <- predict(model, type = "response")
+roc_curve <- roc(data$Survived, predicted_prob)
+
+plot(roc_curve, col = "blue", main = "ROC Curve for Titanic Survival Model")
+
+auc_value <- auc(roc_curve)
+print(paste("AUC:", auc_value))
+```
+
+## McFadden's R-squared
+
+```{r}
+null_model <- glm(Survived ~ 1, data = data, family = binomial)  # Null model (only intercept, no predictors)
+R2 <- 1 - (logLik(model) / logLik(null_model))
+print(paste("McFadden's R-squared:", R2 |> round(3)))
+```
+
+R squared > 0.2: Good model.
+R squared > 0.4: Strong model.
+
+
